@@ -1,0 +1,12 @@
+attrs==19.3.0
+dbus-python==1.2.16
+libevdev==0.7
+more-itertools==8.2.0
+packaging==20.1
+pluggy==0.13.1
+py==1.8.1
+pyparsing==2.4.6
+pytest==5.3.5
+pyudev==0.22.0
+six==1.14.0
+wcwidth==0.1.8

@@ -35,6 +35,7 @@ setup(
     packages=[
         'logitechd',
     ],
+    python_requires='>=3.7',
     install_requires=[
         'dbus-python',
         'pyudev',

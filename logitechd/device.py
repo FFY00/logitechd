@@ -3,6 +3,8 @@
 import fcntl
 import os
 
+import logitechd.hidraw
+
 
 class Device(object):
     '''
@@ -13,6 +15,28 @@ class Device(object):
         self._path = path
         self._fd = open(self._path, 'rb+')
         fcntl.fcntl(self._fd, fcntl.F_SETFL, os.O_NONBLOCK)
+
+        self.hidraw = logitechd.hidraw.Hidraw(self._fd)
+
+        self.name = logitechd.hidraw._HIDIOCGRAWNAME(self._fd)
+        print(f'name = {self.name}')
+        self.info = logitechd.hidraw._HIDIOCGRAWINFO(self._fd)
+        print(f'info = {self.info}')
+        self.rdesc_size = logitechd.hidraw._HIDIOCGRDESCSIZE(self._fd)
+        print(f'rdesc_size = {self.rdesc_size}')
+        self.rdesc = logitechd.hidraw._HIDIOCGRDESC(self._fd, self.rdesc_size)
+        print(f'rdesc = {self.rdesc}')
+
+        print('=' * 30)
+
+        self.name = self.hidraw.name
+        print(f'name = {self.name}')
+        self.info = self.hidraw.info
+        print(f'info = {self.info}')
+        self.rdesc_size = self.hidraw.report_descriptor_size
+        print(f'rdesc_size = {self.rdesc_size}')
+        self.rdesc = self.hidraw.report_descriptor
+        print(f'rdesc = {self.rdesc}')
 
         self._get_report_descriptor()
         assert self._is_vendor()

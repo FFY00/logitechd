@@ -28,8 +28,7 @@ if __name__ == '__main__':
         if device.device_node:
 
             if device.action == 'add':
-                parent = logitechd.utils.find_usb_parent(device, receivers)
-                if parent:
+                if logitechd.utils.find_usb_parent(device, receivers):
                     devices[device.device_node] = Device(device.device_node)
 
             elif device.action == 'remove':

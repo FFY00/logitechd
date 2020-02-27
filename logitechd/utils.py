@@ -11,6 +11,9 @@ DeviceInfo = collections.namedtuple('Device', 'vid pid')
 
 
 def find_usb_parent(device: pyudev.Device, target: List[DeviceInfo]) -> pyudev.Device:
+    if not device:
+        return
+
     parent = device.find_parent('usb')
     if parent and 'PRODUCT' in parent.properties:
         for t in target:

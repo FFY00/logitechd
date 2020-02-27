@@ -20,6 +20,10 @@ if __name__ == '__main__':
 
     devices = {}
 
+    for device in pyudev.Context().list_devices(subsystem='hidraw'):
+        if logitechd.utils.find_usb_parent(device, receivers):
+            devices[device.device_node] = Device(device.device_node)
+
     def log_event(action, device):
         if device.device_node:
 

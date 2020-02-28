@@ -21,7 +21,7 @@ jobs:
     - name: Static analysis with mympy
       run: |
         pip install mypy
-        mypy --ignore-missing-imports -p logitechd
+        mypy --ignore-missing-imports --strict -p logitechd
     - name: Lint with flake8
       run: |
         pip install flake8

@@ -4,6 +4,8 @@
 
 import pyudev
 
+from typing import List
+
 import logitechd.utils
 
 from logitechd.device import Device
@@ -14,22 +16,26 @@ if __name__ == '__main__':
     monitor = pyudev.Monitor.from_netlink(context)
     monitor.filter_by('hidraw')
 
-    receivers = [
-        DeviceInfo(vid=0x46d, pid=0xc33f)
+    receivers: List[DeviceInfo] = [
+        DeviceInfo(vid=0x46d, pid=0xc33f),
     ]
 
     devices = {}
 
-    for device in pyudev.Context().list_devices(subsystem='hidraw'):
+    def init_device(device: pyudev.device._device.Device) -> None:
         if logitechd.utils.find_usb_parent(device, receivers):
-            devices[device.device_node] = Device(device.device_node)
+            hidraw = logitechd.hidraw.Hidraw(device.device_node)
+            if hidraw.has_vendor_page:
+                devices[device.device_node] = Device(hidraw)
 
-    def log_event(action, device):
+    for device in pyudev.Context().list_devices(subsystem='hidraw'):
+        init_device(device)
+
+    def log_event(action: str, device: pyudev.device._device.Device) -> None:
         if device.device_node:
 
             if device.action == 'add':
-                if logitechd.utils.find_usb_parent(device, receivers):
-                    devices[device.device_node] = Device(device.device_node)
+                init_device(device)
 
             elif device.action == 'remove':
                 if device.device_node in devices:

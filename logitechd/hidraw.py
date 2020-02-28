@@ -198,4 +198,48 @@ class Hidraw(object):
 
     @property
     def has_vendor_page(self) -> bool:
-        return True
+        '''
+        Whether or not the report descriptor of a hidraw node contains a vendor page
+
+        Really basic HID report descriptor parser. You can find the documentation
+        in items 5 (Operational Mode) and 6 (Descriptors) of the Device Class
+        Definition for HID
+        '''
+
+        class Type(object):
+            MAIN = 0
+            GLOBAL = 1
+            LOCAL = 2
+            RESERVED = 3
+
+        class TagGlobal(object):
+            USAGE_PAGE = 0b0000
+            LOGICAL_MINIMUM = 0b0001
+            LOGICAL_MAXIMUM = 0b0010
+            PHYSICAL_MINIMUM = 0b0011
+            PHYSICAL_MAXIMUM = 0b0100
+            UNIT_EXPONENT = 0b0101
+            UNIT = 0b0110
+            REPORT_SIZE = 0b0111
+            REPORT_ID = 0b1000
+            REPORT_COUNT = 0b1001
+            PUSH = 0b1010
+            POP = 0b1011
+
+        rdesc = self.report_descriptor
+        i = 0
+        while i < len(rdesc):
+            prefix = rdesc[i]
+            tag = (prefix & 0b11110000) >> 4
+            typ = (prefix & 0b00001100) >> 2
+            size = prefix & 0b00000011
+
+            if size == 3:  # 6.2.2.2
+                size = 4
+
+            if typ == Type.GLOBAL and tag == TagGlobal.USAGE_PAGE and rdesc[i+2] == 0xff:  # vendor page
+                return True
+
+            i += size + 1
+
+        return False

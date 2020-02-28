@@ -1,13 +1,22 @@
 # SPDX-License-Identifier: MIT
 
-import collections
+import dataclasses
 
 import pyudev
 
-from typing import List
+from typing import List, Optional
 
 
-DeviceInfo = collections.namedtuple('Device', 'vid pid')
+@dataclasses.dataclass
+class DeviceInfo(object):
+    bus: int = 0x03
+    vid: Optional[int] = None
+    pid: Optional[int] = None
+
+    def __str__(self) -> str:
+        if self.vid is not None and self.pid is not None:
+            return f'DeviceInfo({hex(self.bus)}, {hex(self.vid)}, {hex(self.pid)})'
+        return f'DeviceInfo(unknown)'
 
 
 def find_usb_parent(device: pyudev.Device, target: List[DeviceInfo]) -> pyudev.Device:

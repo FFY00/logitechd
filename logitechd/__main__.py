@@ -4,12 +4,27 @@
 
 import pyudev
 
-from typing import List
+from typing import Dict, List
 
 import logitechd.utils
 
 from logitechd.device import Device
 from logitechd.utils import DeviceInfo
+
+
+def event_handler(action: str, device: pyudev.device._device.Device) -> None:
+    if device.device_node:
+
+        if action == 'add':
+            if logitechd.utils.find_usb_parent(device, receivers):
+                hidraw = logitechd.hidraw.Hidraw(device.device_node)
+                if hidraw.has_vendor_page:
+                    devices[device.device_node] = Device(hidraw)
+
+        elif action == 'remove':
+            if device.device_node in devices:
+                del devices[device.device_node]
+
 
 if __name__ == '__main__':
     context = pyudev.Context()
@@ -20,28 +35,13 @@ if __name__ == '__main__':
         DeviceInfo(vid=0x46d, pid=0xc33f),
     ]
 
-    devices = {}
+    devices: Dict[str, Device] = {}
 
-    def init_device(device: pyudev.device._device.Device) -> None:
-        if logitechd.utils.find_usb_parent(device, receivers):
-            hidraw = logitechd.hidraw.Hidraw(device.device_node)
-            if hidraw.has_vendor_page:
-                devices[device.device_node] = Device(hidraw)
-
+    # Trigger the event handler manually to proccess the already existent devices
     for device in pyudev.Context().list_devices(subsystem='hidraw'):
-        init_device(device)
+        event_handler('add', device)
 
-    def log_event(action: str, device: pyudev.device._device.Device) -> None:
-        if device.device_node:
-
-            if device.action == 'add':
-                init_device(device)
-
-            elif device.action == 'remove':
-                if device.device_node in devices:
-                    del devices[device.device_node]
-
-    observer = pyudev.MonitorObserver(monitor, log_event)
+    observer = pyudev.MonitorObserver(monitor, event_handler)
     observer.start()
     print('Started listening for udev events...')
 

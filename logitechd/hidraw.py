@@ -266,10 +266,3 @@ class Hidraw(object):
         Writes data to the hidraw node
         '''
         self._fd.write(bytes(buf))
-
-    def command(self, buf: List[int], timeout: int = 1) -> List[int]:
-        '''
-        Writes data to the hidraw node and reads the reply
-        '''
-        self.write(buf)
-        return self.read(timeout)

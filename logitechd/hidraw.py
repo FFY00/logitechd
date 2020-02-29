@@ -251,12 +251,15 @@ class Hidraw(object):
         '''
         max_time = time.time() + timeout
 
-        buf = None
-        while buf is None and time.time() < max_time:
-            buf = self._fd.read()
+        buf: Optional[bytes] = None
+        while not buf and time.time() < max_time:
+            try:
+                buf = self._fd.read()
+            except BrokenPipeError:
+                pass
             time.sleep(0.001)
 
-        return list(buf)  # type: ignore
+        return list(buf or [])
 
     def write(self, buf: List[int]) -> None:
         '''

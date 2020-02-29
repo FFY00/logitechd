@@ -4,6 +4,7 @@ import array
 import ctypes
 import fcntl
 import os
+import time
 
 from typing import BinaryIO, List, Optional, Union
 
@@ -243,3 +244,29 @@ class Hidraw(object):
             i += size + 1
 
         return False
+
+    def read(self, timeout: int = 1) -> List[int]:
+        '''
+        Reads data from the hidraw node
+        '''
+        max_time = time.time() + timeout
+
+        buf = None
+        while buf is None and time.time() < max_time:
+            buf = self._fd.read()
+            time.sleep(0.001)
+
+        return list(buf)  # type: ignore
+
+    def write(self, buf: List[int]) -> None:
+        '''
+        Writes data to the hidraw node
+        '''
+        self._fd.write(bytes(buf))
+
+    def command(self, buf: List[int], timeout: int = 1) -> List[int]:
+        '''
+        Writes data to the hidraw node and reads the reply
+        '''
+        self.write(buf)
+        return self.read(timeout)

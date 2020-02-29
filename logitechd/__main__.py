@@ -6,13 +6,13 @@ import pyudev
 
 from typing import Dict, List
 
+import logitechd.device
 import logitechd.utils
 
-from logitechd.device import Device
 from logitechd.utils import DeviceInfo
 
 
-receivers: List[DeviceInfo] = [
+target_devices: List[DeviceInfo] = [
     # Wired
     DeviceInfo(vid=0x46d, pid=0xc33c),  # G513
     DeviceInfo(vid=0x46d, pid=0xc33e),  # G915
@@ -26,37 +26,51 @@ receivers: List[DeviceInfo] = [
 ]
 
 
-def event_handler(action: str, device: pyudev.device._device.Device) -> None:
-    if device.device_node:
+def event_handler_parent(action: str, device: pyudev.Device) -> None:
+    '''
+    udev event handler for parent (USB Reciver, Bluetooth) actions
+    '''
+    if action == 'add' and device.device_node and 'PRODUCT' in device.properties:
+        for target in target_devices:
+            if device.properties['PRODUCT'].startswith(f'{target.vid:x}/{target.pid:x}'):
+                logitechd.utils.populate_device_tree(device, target, devices)
 
-        if action == 'add':
-            if logitechd.utils.find_usb_parent(device, receivers):
-                hidraw = logitechd.hidraw.Hidraw(device.device_node)
-                if hidraw.has_vendor_page:
-                    devices[device.device_node] = Device(hidraw)
 
-        elif action == 'remove':
-            if device.device_node in devices:
-                del devices[device.device_node]
+def event_handler_hidraw(action: str, device: pyudev.Device) -> None:
+    '''
+    udev event handler for node (hidraw devices created by the hid-logitech-dj kernel driver) actions
+    '''
+    if action == 'remove' and device.device_node:
+        if device.device_node in devices and not devices[device.device_node].children:
+            devices[device.device_node].destroy()
+            del devices[device.device_node]
 
 
 if __name__ == '__main__':
-    devices: Dict[str, Device] = {}
+    devices: Dict[str, logitechd.device.Device] = {}
 
     context = pyudev.Context()
-    monitor = pyudev.Monitor.from_netlink(context)
-    monitor.filter_by('hidraw')
+    monitor_usb = pyudev.Monitor.from_netlink(context)
+    monitor_usb.filter_by('usb')
+    monitor_hidraw = pyudev.Monitor.from_netlink(context)
+    monitor_hidraw.filter_by('hidraw')
 
     # Trigger the event handler manually to proccess the already existent devices
-    for device in context.list_devices(subsystem='hidraw'):
-        event_handler('add', device)
+    for device in context.list_devices(subsystem='usb'):
+        event_handler_parent('add', device)
 
-    observer = pyudev.MonitorObserver(monitor, event_handler)
-    observer.start()
+    pyudev.MonitorObserver(monitor_usb, event_handler_parent).start()
+    pyudev.MonitorObserver(monitor_hidraw, event_handler_hidraw).start()
     print('Started listening for udev events...')
 
     import time
     while(True):
-        time.sleep(1)
-        print(f'devices = {list(devices.keys())}')
-        pass
+        time.sleep(1.5)
+        print(f'\ndevices = {list(devices.keys())}')
+        for path, device in devices.items():
+            try:
+                print(f'{device.path} ({device._hidraw.name})')
+            except:
+                print(device.path)
+            for chidren in device.children:
+                print(f'\t{chidren.path} ({chidren._hidraw.name})')

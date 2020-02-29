@@ -27,18 +27,18 @@ def event_handler(action: str, device: pyudev.device._device.Device) -> None:
 
 
 if __name__ == '__main__':
-    context = pyudev.Context()
-    monitor = pyudev.Monitor.from_netlink(context)
-    monitor.filter_by('hidraw')
-
     receivers: List[DeviceInfo] = [
         DeviceInfo(vid=0x46d, pid=0xc33f),
     ]
 
     devices: Dict[str, Device] = {}
 
+    context = pyudev.Context()
+    monitor = pyudev.Monitor.from_netlink(context)
+    monitor.filter_by('hidraw')
+
     # Trigger the event handler manually to proccess the already existent devices
-    for device in pyudev.Context().list_devices(subsystem='hidraw'):
+    for device in context.list_devices(subsystem='hidraw'):
         event_handler('add', device)
 
     observer = pyudev.MonitorObserver(monitor, event_handler)

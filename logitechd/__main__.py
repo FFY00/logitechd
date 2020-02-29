@@ -12,6 +12,20 @@ from logitechd.device import Device
 from logitechd.utils import DeviceInfo
 
 
+receivers: List[DeviceInfo] = [
+    # Wired
+    DeviceInfo(vid=0x46d, pid=0xc33c),  # G513
+    DeviceInfo(vid=0x46d, pid=0xc33e),  # G915
+    DeviceInfo(vid=0x46d, pid=0xc33f),  # G815
+    # Receivers
+    DeviceInfo(vid=0x46d, pid=0xc52b),  # Unifying
+    DeviceInfo(vid=0x46d, pid=0xc539),  # Lightspeed 1.0
+    DeviceInfo(vid=0x46d, pid=0xc53a),  # Powerplay (Lightspeed 1.0)
+    DeviceInfo(vid=0x46d, pid=0xc53f),  # Lightspeed 1.1
+    DeviceInfo(vid=0x46d, pid=0xc541),  # Lightspeed 1.1 v2
+]
+
+
 def event_handler(action: str, device: pyudev.device._device.Device) -> None:
     if device.device_node:
 
@@ -27,10 +41,6 @@ def event_handler(action: str, device: pyudev.device._device.Device) -> None:
 
 
 if __name__ == '__main__':
-    receivers: List[DeviceInfo] = [
-        DeviceInfo(vid=0x46d, pid=0xc33f),
-    ]
-
     devices: Dict[str, Device] = {}
 
     context = pyudev.Context()

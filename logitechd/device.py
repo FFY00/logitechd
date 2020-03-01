@@ -70,6 +70,8 @@ class Device(object):
             if len(buf) != report_size:
                 self._read_buf = buf[report_size:]
                 buf = buf[:report_size]
+            else:
+                self._read_buf = []
 
         return buf
 

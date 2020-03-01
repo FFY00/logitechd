@@ -13,10 +13,13 @@ class Device(object):
 
     def __init__(self, hidraw: logitechd.hidraw.Hidraw, parent: Optional['Device'] = None) -> None:
         self._hidraw: logitechd.hidraw.Hidraw = hidraw
+        self._online = False
         self._parent: Optional[Device] = parent
         self.children: List[Device] = []
 
         self._read_buf: List[int] = []
+
+        self._probe_hidpp()
 
     def __del__(self) -> None:
         self.destroy()
@@ -31,6 +34,28 @@ class Device(object):
     @property
     def path(self) -> str:
         return self._hidraw.path
+
+    @property
+    def online(self) -> bool:
+        return self._online
+
+    def _probe_hidpp(self) -> None:
+        buf = self.command([0x10, 0xff, 0x00, 0x10, 0x00, 0x00, 0x00])  # HID++ - Protocol version discover routine
+
+        if buf[2] == 0x8f:  # device is HID++ 1.0
+            if self._parent:
+                print(f'{self.path} ({self._hidraw.name}): Device offline')
+                return
+
+            print(f'{self.path} ({self._hidraw.name}): HID++ 1.0 (index {buf[1]:x})')
+            self._online = True
+
+        elif buf[2] == 0x00:  # device is HID++ 2.0
+            print(f'{self.path} ({self._hidraw.name}): HID++ 2.0 (index {buf[1]:x})')
+            self._online = True
+
+        else:
+            print(f'{self.path} ({self._hidraw.name}): Unknown protocol')
 
     def read(self, timeout: int = 1) -> List[int]:
         '''

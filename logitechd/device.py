@@ -57,6 +57,19 @@ class Device(object):
     def command(self, buf: List[int], timeout: int = 1) -> List[int]:
         '''
         Writes data to the device node and reads the reply
+
+        This clears the read buffer, to make sure we don't read the wrong reply.
+        Make sure you process everything in the buffer before calling.
         '''
+        self.clear_read_buffer()
         self.write(buf)
         return self.read(timeout)
+
+    def clear_read_buffer(self) -> None:
+        '''
+        Clears the internal read buffer as well as the hidraw buffer
+        '''
+        self._read_buf = []
+        buf = self._hidraw.read(timeout=0.001)
+        while buf:
+            buf = self._hidraw.read(timeout=0.001)

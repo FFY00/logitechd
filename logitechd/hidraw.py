@@ -245,7 +245,7 @@ class Hidraw(object):
 
         return False
 
-    def read(self, timeout: int = 1) -> List[int]:
+    def read(self, timeout: Union[int, float] = 1) -> List[int]:
         '''
         Reads data from the hidraw node
         '''

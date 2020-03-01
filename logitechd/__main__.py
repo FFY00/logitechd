@@ -63,14 +63,16 @@ if __name__ == '__main__':
     pyudev.MonitorObserver(monitor_hidraw, event_handler_hidraw).start()
     print('Started listening for udev events...')
 
+    # temporary daemon payload -- print the device tree
     import time
     while(True):
         time.sleep(1.5)
-        print(f'\ndevices = {list(devices.keys())}')
+        print()
         for path, device in devices.items():
-            try:
-                print(f'{device.path} ({device._hidraw.name})')
-            except:
-                print(device.path)
-            for chidren in device.children:
-                print(f'\t{chidren.path} ({chidren._hidraw.name})')
+            if not device._parent:
+                try:
+                    print(f'{device.path} ({device._hidraw.name})')
+                except OSError:
+                    print(device.path)
+                for chidren in device.children:
+                    print(f'\t{chidren.path} ({chidren._hidraw.name})')

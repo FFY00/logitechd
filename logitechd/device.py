@@ -4,6 +4,7 @@ from typing import List, Optional
 
 import logitechd.hidraw
 import logitechd.hidpp
+import logitechd.protocol.hidpp20
 
 
 class Device(object):
@@ -53,6 +54,7 @@ class Device(object):
         elif buf[2] == 0x00:  # device is HID++ 2.0
             print(f'{self.path} ({self._hidraw.name}): HID++ 2.0 (index {buf[1]:x})')
             self._online = True
+            self._protocol = logitechd.protocol.hidpp20.HIDPP20(self, buf[1])
 
         else:
             print(f'{self.path} ({self._hidraw.name}): Unknown protocol')

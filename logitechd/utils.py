@@ -1,8 +1,9 @@
 # SPDX-License-Identifier: MIT
 
 import dataclasses
+import typing
 
-from typing import List, Dict, Optional
+from typing import List, Dict, Optional, Union
 
 import pyudev
 
@@ -20,6 +21,35 @@ class DeviceInfo(object):
         if self.vid is not None and self.pid is not None:
             return f'DeviceInfo({hex(self.bus)}, {hex(self.vid)}, {hex(self.pid)})'
         return f'DeviceInfo(unknown)'
+
+
+T = typing.TypeVar('T')
+
+
+def flatten(items: List[Union[List[T], T]]) -> List[T]:
+    '''
+    Flattens lists
+    Example:
+        flatten([0x01, 0x02, [0x03, 0x04, 0x05], 0x06]) == [0x01, 0x02, 0x03, 0x04, 0x05, 0x06]
+    '''
+    ret = []
+    for item in items:
+        if isinstance(item, list):
+            for i in item:
+                ret.append(i)
+        else:
+            ret.append(item)
+    return ret
+
+
+def ljust(buf: List[int], size: int, char: int = 0x00) -> List[int]:
+    '''
+    Pads buffer to the right in order to acheive the requested size
+    '''
+    if len(buf) >= size:
+        return buf
+
+    return buf + [char] * (size - len(buf))
 
 
 def find_hidraw_children(device: pyudev.Device) -> pyudev.Device:

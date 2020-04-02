@@ -3,12 +3,15 @@
 import dataclasses
 import typing
 
-from typing import List, Dict, Optional, Union
+from typing import Any, List, Dict, Optional, Tuple, Union
 
 import pyudev
 
 import logitechd.device
 import logitechd.hidraw
+
+
+T = typing.TypeVar('T')
 
 
 @dataclasses.dataclass
@@ -23,7 +26,25 @@ class DeviceInfo(object):
         return f'DeviceInfo(unknown)'
 
 
-T = typing.TypeVar('T')
+class DocElement(object):
+    def __init__(self, value: int, doc: str) -> None:
+        self.value = value
+        self.doc = doc
+
+    def __repr__(self) -> str:
+        return f'DocElement(value=0x{self.value:04x}, doc=\'{self.doc}\')'
+
+    @classmethod
+    def from_tuple(cls, val: Tuple[int, str]) -> 'DocElement':
+        return cls(val[0], val[1])
+
+
+class DocTable(type):
+    def __new__(mcs, name: str, bases: Tuple[Any], dict: Dict[str, Any]):  # type: ignore
+        for attr in dict:
+            if not attr.startswith('_') and isinstance(dict[attr], tuple):
+                dict[attr] = DocElement.from_tuple(dict[attr])
+        return super().__new__(mcs, name, bases, dict)
 
 
 def flatten(items: List[Union[List[T], T]]) -> List[T]:

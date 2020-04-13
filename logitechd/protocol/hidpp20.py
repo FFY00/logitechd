@@ -91,7 +91,7 @@ class HIDPP20(logitechd.protocol.base.BaseProtocol):
                 self.report_id,
                 self.device_index,
                 self.feature_index,
-                self.function << 8 + self.sw_id & 0xf,
+                (self.function << 4) + (self.sw_id & 0xf),
                 self.args,
             ]
             return logitechd.utils.ljust(logitechd.utils.flatten(buf), logitechd.hidpp.REPORT_SIZE[self.report_id])
@@ -106,7 +106,7 @@ class HIDPP20(logitechd.protocol.base.BaseProtocol):
                 report_id=buf[0],
                 device_index=buf[1],
                 feature_index=buf[2],
-                function=buf[3] >> 8,
+                function=buf[3] >> 4,
                 sw_id=buf[3] & 0xf,
                 args=buf[4:]
             )

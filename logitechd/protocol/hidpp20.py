@@ -115,7 +115,7 @@ class HIDPP20(logitechd.protocol.base.BaseProtocol):
         '''
         Sends a message to the device and return the response
         '''
-        return self.Message.from_buffer(msg.buffer)
+        return self.Message.from_buffer(self._device.command(msg.buffer))
 
     @hiddp_request(features.ROOT, functions.GET_PROTOCOL_VERSION)  # type: ignore
     def ping(self, data: int, msg: 'HIDPP20.Message') -> int:

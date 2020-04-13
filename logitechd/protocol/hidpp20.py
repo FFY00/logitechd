@@ -32,8 +32,6 @@ def hiddp_request(feature: logitechd.utils.DocElement, function: logitechd.utils
     function and passes it to the python function. It also injects a docstring
     to the function.
     '''
-    print(feature, function)
-
     def decorator(func: Callable[..., Any]) -> Callable[..., Any]:
         def wrapper(protocol: logitechd.protocol.base.BaseProtocol, *args: Any, **kwargs: Any) -> Any:
             assert isinstance(protocol, logitechd.protocol.base.BaseProtocol)

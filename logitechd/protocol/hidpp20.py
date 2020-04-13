@@ -13,7 +13,7 @@ class _Features(metaclass=logitechd.utils.DocTable):
     '''
     Lists HID++ 2.0 Features
     '''
-    ROOT = 0x0001, 'IRoot'
+    ROOT = 0x0000, 'IRoot'
 
 
 class _Functions(metaclass=logitechd.utils.DocTable):

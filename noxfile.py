@@ -11,4 +11,4 @@ nox.options.reuse_existing_virtualenvs = True
 def mypy(session):
     session.install('.', 'mypy')
 
-    session.run('mypy', '-p', 'dbus_objects')
+    session.run('mypy', '-p', 'logitechd')

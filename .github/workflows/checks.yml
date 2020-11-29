@@ -1,0 +1,46 @@
+name: check
+on:
+  push:
+    branches:
+      - master
+  pull_request:
+    branches:
+      - master
+
+jobs:
+  pre-commit:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v1
+
+      - name: Setup python for pre-commit
+        uses: actions/setup-python@v2
+        with:
+          python-version: 3.9
+
+      - uses: pre-commit/action@v2.0.0
+
+  mypy:
+    runs-on: ubuntu-latest
+    strategy:
+      matrix:
+        python: [3.6, 3.7, 3.8, 3.9]
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v1
+
+      - name: Set up Python
+        uses: actions/setup-python@v1
+
+      - name: Install mypy
+        run: |
+          pip install --upgrade pip
+          pip install mypy
+          mypy --version
+
+      - name: Install dependencies
+        run: pip install dbus-objects pyudev
+
+      - name: Run mypy
+        run: mypy --python-version ${{ matrix.python }} -p logitechd

@@ -2,9 +2,9 @@
 #
 # SPDX-License-Identifier: MIT
 
-import pyudev
-
 from typing import Dict, List
+
+import pyudev
 
 import logitechd.device
 import logitechd.utils
@@ -68,7 +68,7 @@ if __name__ == '__main__':
     while(True):
         time.sleep(1.5)
         print()
-        for path, device in devices.items():
+        for _path, device in devices.items():
             if not device._parent:
                 try:
                     print(f'{device.path} ({device._hidraw.name})')

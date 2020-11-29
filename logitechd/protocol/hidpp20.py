@@ -1,13 +1,12 @@
 # SPDX-License-Identifier: MIT
 
-import collections
-import typing
-from typing import Any, Callable, ClassVar, Dict, List, NamedTuple, Tuple, Union
+from typing import Any, Callable, List, Optional, Union
 
 import logitechd.hidpp
 import logitechd.protocol
 import logitechd.protocol.base
 import logitechd.utils
+
 
 class _Features(metaclass=logitechd.utils.DocTable):
     '''
@@ -64,8 +63,15 @@ class HIDPP20(logitechd.protocol.base.BaseProtocol):
         '''
         HID++ 2.0 message
         '''
-        def __init__(self, report_id: int, device_index: int, feature_index: int,
-                     function: int, sw_id: int = 0, args: List[int] = []):
+        def __init__(
+            self,
+            report_id: int,
+            device_index: int,
+            feature_index: int,
+            function: int,
+            sw_id: int = 0,
+            args: Optional[List[int]] = None,
+        ):
             self.report_id = report_id
             self.device_index = device_index
             self.feature_index = feature_index
@@ -74,6 +80,7 @@ class HIDPP20(logitechd.protocol.base.BaseProtocol):
 
             args_len = logitechd.hidpp.REPORT_SIZE[self.report_id] - 4
 
+            args = args or []
             assert len(args) <= args_len
             self.args = logitechd.utils.ljust(args, args_len)
 

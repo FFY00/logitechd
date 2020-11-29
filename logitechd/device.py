@@ -2,8 +2,8 @@
 
 from typing import List, Optional
 
-import logitechd.hidraw
 import logitechd.hidpp
+import logitechd.hidraw
 import logitechd.protocol.hidpp20
 
 

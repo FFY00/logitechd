@@ -1,5 +1,15 @@
 # SPDX-License-Identifier: MIT
 
+'''
+hidraw
+
+Writing Python wrappers for C APIs is usually hard, and it is the case of
+ioctl(s). I tried to write a simple to use and somewhat readable pythonic
+wrapper for this API. It is still a pain to use... but hopefully we won't have
+to touch this code a lot. If anyone has suggestions on how this could be
+improved, they are more than welcome!
+'''
+
 import array
 import ctypes
 import fcntl
@@ -9,15 +19,6 @@ import time
 from typing import BinaryIO, List, Optional, Union
 
 from logitechd.utils import DeviceInfo
-
-
-'''
-Writing Python wrappers for C APIs is usually hard, and it is the case of
-ioctl(s). I tried to write a simple to use and somewhat readable pytyhonic
-wrapper for this API. It is still a pain to use... but hopefully we won't have
-to touch this code a lot. If anyone has suggestions on how this could be
-improved, they are more than welcome!
-'''
 
 
 class IOCTL(object):

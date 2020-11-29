@@ -3,7 +3,7 @@
 import dataclasses
 import typing
 
-from typing import Any, List, Dict, Optional, Tuple, Union
+from typing import Any, Dict, List, Optional, Tuple, Union
 
 import pyudev
 
@@ -23,7 +23,7 @@ class DeviceInfo(object):
     def __str__(self) -> str:
         if self.vid is not None and self.pid is not None:
             return f'DeviceInfo({hex(self.bus)}, {hex(self.vid)}, {hex(self.pid)})'
-        return f'DeviceInfo(unknown)'
+        return 'DeviceInfo(unknown)'
 
 
 class DocElement(object):

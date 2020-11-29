@@ -2,6 +2,7 @@
 
 import typing
 
+
 if typing.TYPE_CHECKING:  # pragma: no cover
     import logitechd.device
 

@@ -4,6 +4,7 @@ from __future__ import annotations
 
 import abc
 import dataclasses
+import logging
 import os
 import typing
 
@@ -128,6 +129,7 @@ class HidrawBackend(Backend):
     '''
 
     def __init__(self) -> None:
+        self.__logger = logging.getLogger(self.__class__.__name__)
         self._tree = treelib.Tree()
         self._devices = self._tree.create_node(identifier='devices')
 
@@ -159,6 +161,10 @@ class HidrawBackend(Backend):
         # trigger the parent event handler manually for initial population
         for device in udev_context.list_devices(subsystem='usb'):
             self._event_handler_parent('add', device)
+
+        self.__logger.info('Device tree populated:')
+        for line in self._tree.show(stdout=False).splitlines():
+            self.__logger.info('\t' + line)
 
         # start observers
         self._observer_usb.start()

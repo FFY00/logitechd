@@ -3,7 +3,7 @@
 import abc
 import dataclasses
 
-from typing import Optional, Sequence, Set
+from typing import Optional, Sequence, Set, Tuple
 
 
 # backend helper data
@@ -19,6 +19,12 @@ class _DeviceInfo(object):
         if self.vid is not None and self.pid is not None:
             return f'DeviceInfo({hex(self.bus)}, {hex(self.vid)}, {hex(self.pid)})'
         return 'DeviceInfo(unknown)'
+
+    @property
+    def as_tuple(self) -> Tuple[int, int, int]:
+        if not self.vid or not self.pid:
+            raise ValueError(f'Device does not have VID or PID: vid={self.vid}, pid={self.pid}')
+        return self.bus, self.vid, self.pid
 
 
 _TARGET_DEVICES = [

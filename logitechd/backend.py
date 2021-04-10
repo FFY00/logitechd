@@ -208,7 +208,13 @@ class HidrawBackend(Backend):
 
         # discover hidraw node of the parent and save the children
         for child in self._find_hidraw_children(usb_device):
-            hidraw = ioctl.hidraw.Hidraw(child.device_node)
+
+            try:
+                hidraw = ioctl.hidraw.Hidraw(child.device_node)
+            except PermissionError:
+                self.__logger.error(f'Could not open device `{child.device_node}`, ignoring...')
+                continue
+
             if self._hidraw_has_vendor_page(hidraw):  # supports vendor protocol
                 if hidraw.info == target_info.as_tuple:  # target (parent)
                     parent = HidrawDevice(hidraw=hidraw)

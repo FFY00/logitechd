@@ -2,6 +2,7 @@
 
 import abc
 import dataclasses
+import platform
 
 from typing import Optional, Sequence, Set, Tuple
 
@@ -66,3 +67,17 @@ class Backend(metaclass=abc.ABCMeta):
         Receivers are also considered considered "devices" and should be
         included in this Sequence.
         '''
+
+
+# helpers
+
+
+def construct_backend() -> Backend:
+    '''Instaceates the correct backend for this system'''
+    system = platform.uname().system
+    if system == 'Linux':
+        import logitechd.backend.hidraw
+
+        return logitechd.backend.hidraw.HidrawBackend()
+    else:
+        raise NotImplementedError('Unsupported operating system')

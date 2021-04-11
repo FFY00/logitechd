@@ -1,17 +1,11 @@
 #!/usr/bin/env python
 # SPDX-License-Identifier: MIT
 
-import platform
-
 import logitechd.backend
 
 
 if __name__ == '__main__':
-    system = platform.uname().system
-    if system == 'Linux':
-        backend = logitechd.backend.HidrawBackend()
-    else:
-        raise NotImplementedError('Unsupported operating system')
+    backend = logitechd.backend.construct_backend()
 
     # temporary payload
     import logging

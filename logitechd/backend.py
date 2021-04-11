@@ -126,6 +126,9 @@ class HidrawBackend(Backend):
     Linux hidraw backend
 
     Looks for devices in UDEV, it monitors UDEV for changes in different thread(s).
+
+    Assumes only one hidraw node with a vendor usage page will be exported by the
+    hid-logitech-dj driver.
     '''
 
     def __init__(self) -> None:

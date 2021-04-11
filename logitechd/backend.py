@@ -56,8 +56,8 @@ _TARGET_DEVICES = [
 # backend abstractions
 
 
-class Device(metaclass=abc.ABCMeta):
-    '''HID++ device ABC'''
+class IODevice(metaclass=abc.ABCMeta):
+    '''HID++ IO device ABC'''
 
     @abc.abstractmethod
     def read(self) -> Sequence[int]:
@@ -71,7 +71,7 @@ class Device(metaclass=abc.ABCMeta):
 class Backend(metaclass=abc.ABCMeta):
     @property
     @abc.abstractmethod
-    def devices(self) -> Set[Device]:
+    def devices(self) -> Set[IODevice]:
         '''
         Set of connected devices
 
@@ -83,7 +83,7 @@ class Backend(metaclass=abc.ABCMeta):
 # Linux hidraw backend
 
 
-class HidrawDevice(Device):
+class HidrawDevice(IODevice):
     '''Linux hidraw device'''
     _hidraw: ioctl.hidraw.Hidraw
 
@@ -139,7 +139,7 @@ class HidrawBackend(Backend):
         self._setup_udev()
 
     @property
-    def devices(self) -> Set[Device]:
+    def devices(self) -> Set[IODevice]:
         return {
             node.data for node in self._tree.all_nodes_itr()
             if node.identifier != 'devices'

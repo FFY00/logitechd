@@ -54,7 +54,7 @@ class IODevice(metaclass=abc.ABCMeta):
 
     @abc.abstractmethod
     def write(self, data: Sequence[int]) -> None:
-        '''Writes a HID++ report from to the device'''
+        '''Writes a HID++ report to the device'''
 
 
 class Backend(metaclass=abc.ABCMeta):

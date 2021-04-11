@@ -12,6 +12,8 @@ from typing import List, Optional, Sequence, Set, Tuple
 
 import treelib
 
+import logitechd.protocol
+
 
 if typing.TYPE_CHECKING:
     import ioctl.hidraw
@@ -225,7 +227,7 @@ class HidrawBackend(Backend):
                         tag=hidraw.name,
                         identifier=hidraw.path,
                         parent='devices',
-                        data=hidraw,
+                        data=logitechd.protocol.construct_device(parent),
                     )
                 else:  # device
                     children.append(HidrawDevice(hidraw=hidraw))
@@ -237,7 +239,7 @@ class HidrawBackend(Backend):
                     tag=child.name,
                     identifier=child.path,
                     parent=parent.path,
-                    data=child,
+                    data=logitechd.protocol.construct_device(child),
                 )
 
     def _hidraw_has_vendor_page(self, hidraw: ioctl.hidraw.Hidraw) -> bool:

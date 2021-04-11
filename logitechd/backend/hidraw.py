@@ -165,6 +165,11 @@ class HidrawBackend(logitechd.backend.Backend):
                     parent=parent.path,
                     data=logitechd.protocol.construct_device(child),
                 )
+        else:
+            self.__logger.error(
+                f'Could not find the hiraw node for the parent device in `{usb_device}` '
+                f'(children=`{children}`)'
+            )
 
     def _hidraw_has_vendor_page(self, hidraw: ioctl.hidraw.Hidraw) -> bool:
         '''

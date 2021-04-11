@@ -65,7 +65,7 @@ class Backend(metaclass=abc.ABCMeta):
         Set of connected devices
 
         Receivers are also considered considered "devices" and should be
-        included in this Sequence.
+        included in this set.
         '''
 
 

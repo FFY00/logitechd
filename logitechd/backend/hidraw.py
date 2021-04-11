@@ -2,90 +2,20 @@
 
 from __future__ import annotations
 
-import abc
-import dataclasses
 import logging
 import os
-import typing
 
-from typing import List, Optional, Sequence, Set, Tuple
+from typing import List, Optional, Sequence, Set
 
+import ioctl.hidraw
+import pyudev
 import treelib
 
+import logitechd.backend
 import logitechd.protocol
 
 
-if typing.TYPE_CHECKING:
-    import ioctl.hidraw
-    import pyudev
-
-
-# backend helper data
-
-
-@dataclasses.dataclass
-class _DeviceInfo(object):
-    bus: int = 0x03
-    vid: Optional[int] = None
-    pid: Optional[int] = None
-
-    def __str__(self) -> str:
-        if self.vid is not None and self.pid is not None:
-            return f'DeviceInfo({hex(self.bus)}, {hex(self.vid)}, {hex(self.pid)})'
-        return 'DeviceInfo(unknown)'
-
-    @property
-    def as_tuple(self) -> Tuple[int, int, int]:
-        if not self.vid or not self.pid:
-            raise ValueError(f'Device does not have VID or PID: vid={self.vid}, pid={self.pid}')
-        return self.bus, self.vid, self.pid
-
-
-_TARGET_DEVICES = [
-    # Wired
-    _DeviceInfo(vid=0x46d, pid=0xc33c),  # G513
-    _DeviceInfo(vid=0x46d, pid=0xc33e),  # G915
-    _DeviceInfo(vid=0x46d, pid=0xc33f),  # G815
-    # Receivers
-    _DeviceInfo(vid=0x46d, pid=0xc52b),  # Unifying
-    _DeviceInfo(vid=0x46d, pid=0xc539),  # Lightspeed 1.0
-    _DeviceInfo(vid=0x46d, pid=0xc53a),  # Powerplay (Lightspeed 1.0)
-    _DeviceInfo(vid=0x46d, pid=0xc53f),  # Lightspeed 1.1
-    _DeviceInfo(vid=0x46d, pid=0xc541),  # Lightspeed 1.1 v2
-]
-
-
-# backend abstractions
-
-
-class IODevice(metaclass=abc.ABCMeta):
-    '''HID++ IO device ABC'''
-
-    @abc.abstractmethod
-    def read(self) -> Sequence[int]:
-        '''Reads a HID++ report from the device'''
-
-    @abc.abstractmethod
-    def write(self, data: Sequence[int]) -> None:
-        '''Writes a HID++ report from to the device'''
-
-
-class Backend(metaclass=abc.ABCMeta):
-    @property
-    @abc.abstractmethod
-    def devices(self) -> Set[IODevice]:
-        '''
-        Set of connected devices
-
-        Receivers are also considered considered "devices" and should be
-        included in this Sequence.
-        '''
-
-
-# Linux hidraw backend
-
-
-class HidrawDevice(IODevice):
+class HidrawDevice(logitechd.backend.IODevice):
     '''Linux hidraw device'''
     _hidraw: ioctl.hidraw.Hidraw
 
@@ -98,8 +28,6 @@ class HidrawDevice(IODevice):
         if path and hidraw:
             raise ValueError('Suplied both `path` and `hidraw` arguments, only one is aceptable.')
         elif path:
-            import ioctl.hidraw
-
             self._hidraw = ioctl.hidraw.Hidraw(path)
         elif hidraw:
             self._hidraw = hidraw
@@ -123,7 +51,7 @@ class HidrawDevice(IODevice):
         os.write(self._hidraw.fd, bytes(data))
 
 
-class HidrawBackend(Backend):
+class HidrawBackend(logitechd.backend.Backend):
     '''
     Linux hidraw backend
 
@@ -141,7 +69,7 @@ class HidrawBackend(Backend):
         self._setup_udev()
 
     @property
-    def devices(self) -> Set[IODevice]:
+    def devices(self) -> Set[logitechd.backend.IODevice]:
         return {
             node.data for node in self._tree.all_nodes_itr()
             if node.identifier != 'devices'
@@ -149,8 +77,6 @@ class HidrawBackend(Backend):
 
     def _setup_udev(self) -> None:
         '''Setup UDEV and register observers to look for devices and populate the device tree'''
-        import pyudev
-
         udev_context = pyudev.Context()
 
         # register parent monitor
@@ -180,7 +106,7 @@ class HidrawBackend(Backend):
         Find devices and populate the tree
         '''
         if action == 'add' and device.device_node and 'PRODUCT' in device.properties:
-            for target in _TARGET_DEVICES:
+            for target in logitechd.backend._TARGET_DEVICES:
                 if device.properties['PRODUCT'].startswith(f'{target.vid:x}/{target.pid:x}'):
                     self._populate_device_tree(device, target)
 
@@ -201,13 +127,11 @@ class HidrawBackend(Backend):
     def _populate_device_tree(
         self,
         usb_device: pyudev.Device,
-        target_info: _DeviceInfo,
+        target_info: logitechd.backend._DeviceInfo,
     ) -> None:
         '''
         Look at children of the USB device, find the hidraw nodes and populate the tree.
         '''
-        import ioctl.hidraw
-
         parent: Optional[HidrawDevice] = None
         children: List[HidrawDevice] = []
 

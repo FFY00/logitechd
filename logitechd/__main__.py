@@ -4,7 +4,7 @@
 import logitechd.backend
 
 
-if __name__ == '__main__':
+def main() -> None:
     backend = logitechd.backend.construct_backend()
 
     # temporary payload
@@ -14,3 +14,14 @@ if __name__ == '__main__':
     while True:
         backend._tree.show()
         time.sleep(0.5)
+
+
+def entrypoint() -> None:
+    try:
+        main()
+    except KeyboardInterrupt:
+        print('Exiting...')
+
+
+if __name__ == '__main__':
+    entrypoint()

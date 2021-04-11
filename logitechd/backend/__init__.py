@@ -58,6 +58,14 @@ class IODevice(metaclass=abc.ABCMeta):
 
 
 class Backend(metaclass=abc.ABCMeta):
+    '''
+    IO backend ABC
+
+    Backends must discover devices, call logitechd.protocol.construct_device
+    with a IODevice instance for each device, and save the returned Device
+    instance, so that it can be returned in the ``device`` property.
+    '''
+
     @property
     @abc.abstractmethod
     def devices(self) -> Set[IODevice]:

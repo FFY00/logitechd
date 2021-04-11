@@ -29,3 +29,15 @@ class Device(metaclass=abc.ABCMeta):
     def io(self) -> logitechd.backend.IODevice:
         '''IO interface'''
         return self._io
+
+
+def construct_device(io: logitechd.backend.IODevice) -> Device:
+    '''
+    Instanceates a device given the IO interface.
+
+    Does the protocol discovery and chooses which class to instanceate. This
+    function is meant to be used by backends to construct devices -- they pass
+    the hardware IO backend, we do the protocol discovery and figure out which
+    protocol class should be instanciated.
+    '''
+    return Device(io)

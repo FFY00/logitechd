@@ -6,6 +6,8 @@ import platform
 
 from typing import Optional, Sequence, Set, Tuple
 
+import logitechd.protocol
+
 
 # backend helper data
 
@@ -68,7 +70,7 @@ class Backend(metaclass=abc.ABCMeta):
 
     @property
     @abc.abstractmethod
-    def devices(self) -> Set[IODevice]:
+    def devices(self) -> Set[logitechd.protocol.Device]:
         '''
         Set of connected devices
 

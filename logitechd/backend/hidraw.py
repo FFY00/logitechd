@@ -69,7 +69,7 @@ class HidrawBackend(logitechd.backend.Backend):
         self._setup_udev()
 
     @property
-    def devices(self) -> Set[logitechd.backend.IODevice]:
+    def devices(self) -> Set[logitechd.protocol.Device]:
         return {
             node.data for node in self._tree.all_nodes_itr()
             if node.identifier != 'devices'

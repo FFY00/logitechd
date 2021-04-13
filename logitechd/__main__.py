@@ -12,7 +12,7 @@ def main() -> None:
     logging.basicConfig(level=logging.DEBUG)
     import time
     while True:
-        backend._tree.show()
+        backend._tree.show()  # type: ignore
         time.sleep(0.5)
 
 

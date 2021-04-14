@@ -4,8 +4,11 @@ from __future__ import annotations
 
 import logging
 import os
+import sys
+import threading
 
-from typing import List, Optional, Sequence, Set
+from types import TracebackType
+from typing import List, Optional, Sequence, Set, Type
 
 import ioctl.hidraw
 import pyudev
@@ -13,6 +16,25 @@ import treelib
 
 import logitechd.backend
 import logitechd.protocol
+
+
+if sys.version_info >= (3, 8):
+    from typing import Literal
+else:
+    from typing_extensions import Literal
+
+
+class HidrawInterface(logitechd.backend.IODeviceInterface):
+    '''Linux hidraw read/write interface'''
+
+    def __init__(self, hidraw: ioctl.hidraw.Hidraw) -> None:
+        self._hidraw = hidraw
+
+    def read(self) -> Sequence[int]:
+        return list(os.read(self._hidraw.fd, 64))
+
+    def write(self, data: Sequence[int]) -> None:
+        os.write(self._hidraw.fd, bytes(data))
 
 
 class HidrawDevice(logitechd.backend.IODevice):
@@ -40,6 +62,9 @@ class HidrawDevice(logitechd.backend.IODevice):
             raise KeyError(f'Device `{self.path}` already open')
         self.__open_nodes.append(self.path)
 
+        self._interface = HidrawInterface(self._hidraw)
+        self._lock = threading.Lock()
+
     @property
     def path(self) -> str:
         assert isinstance(self._hidraw.path, str)  # make mypy happy
@@ -50,11 +75,18 @@ class HidrawDevice(logitechd.backend.IODevice):
         assert isinstance(self._hidraw.name, str)  # make mypy happy
         return self._hidraw.name
 
-    def read(self) -> Sequence[int]:
-        return list(os.read(self._hidraw.fd, 64))
+    def __enter__(self) -> logitechd.backend.IODeviceInterface:
+        self._lock.acquire()
+        return self._interface
 
-    def write(self, data: Sequence[int]) -> None:
-        os.write(self._hidraw.fd, bytes(data))
+    def __exit__(
+        self,
+        exc_type: Optional[Type[BaseException]],
+        exc_value: Optional[BaseException],
+        traceback: Optional[TracebackType],
+    ) -> Literal[False]:
+        self._lock.release()
+        return False  # False means we did not handle the exception :)
 
 
 class HidrawBackend(logitechd.backend.Backend):

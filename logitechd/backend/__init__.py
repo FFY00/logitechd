@@ -4,7 +4,8 @@ import abc
 import dataclasses
 import platform
 
-from typing import Optional, Sequence, Set, Tuple
+from types import TracebackType
+from typing import Optional, Sequence, Set, Tuple, Type
 
 import logitechd.protocol
 
@@ -47,8 +48,8 @@ _TARGET_DEVICES = [
 # backend abstractions
 
 
-class IODevice(metaclass=abc.ABCMeta):
-    '''HID++ IO device ABC'''
+class IODeviceInterface(metaclass=abc.ABCMeta):
+    '''HID++ IO device reader/writer ABC'''
 
     @abc.abstractmethod
     def read(self) -> Sequence[int]:
@@ -57,6 +58,32 @@ class IODevice(metaclass=abc.ABCMeta):
     @abc.abstractmethod
     def write(self, data: Sequence[int]) -> None:
         '''Writes a HID++ report to the device'''
+
+
+class IODevice():
+    '''
+    HID++ IO device ABC
+
+    Implements a context manager to get access to the read/write interface.
+    Entering the context manager should lock the read/write interface and
+    prevent it from being used simultaneously. When entering the context manager
+    with a locked interface, we should wait until it is released.
+    This lock should be thread safe, but there are no guarantees it will be
+    proccess safe.
+    '''
+
+    @abc.abstractmethod
+    def __enter__(self) -> IODeviceInterface:
+        '''Obtain access to the read/write interface'''
+
+    @abc.abstractmethod
+    def __exit__(
+        self,
+        exc_type: Optional[Type[BaseException]],
+        exc_value: Optional[BaseException],
+        traceback: Optional[TracebackType],
+    ) -> bool:
+        '''Realease access to the read/write interface'''
 
 
 class Backend(metaclass=abc.ABCMeta):

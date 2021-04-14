@@ -60,7 +60,7 @@ class IODeviceInterface(metaclass=abc.ABCMeta):
         '''Writes a HID++ report to the device'''
 
 
-class IODevice():
+class IODevice(metaclass=abc.ABCMeta):
     '''
     HID++ IO device ABC
 
@@ -71,6 +71,11 @@ class IODevice():
     This lock should be thread safe, but there are no guarantees it will be
     proccess safe.
     '''
+
+    @property
+    @abc.abstractmethod
+    def name(self) -> str:
+        '''Device name'''
 
     @abc.abstractmethod
     def __enter__(self) -> IODeviceInterface:

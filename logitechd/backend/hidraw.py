@@ -19,6 +19,8 @@ class HidrawDevice(logitechd.backend.IODevice):
     '''Linux hidraw device'''
     _hidraw: ioctl.hidraw.Hidraw
 
+    __open_nodes: List[str] = []
+
     def __init__(
         self,
         path: Optional[str] = None,
@@ -33,6 +35,10 @@ class HidrawDevice(logitechd.backend.IODevice):
             self._hidraw = hidraw
         else:
             raise ValueError('Missing arguments: please provide either a `path` or `hidraw` argument')
+
+        if self.path in self.__open_nodes:
+            raise KeyError(f'Device `{self.path}` already open')
+        self.__open_nodes.append(self.path)
 
     @property
     def path(self) -> str:
